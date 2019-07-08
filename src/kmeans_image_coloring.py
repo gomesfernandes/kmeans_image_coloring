@@ -1,23 +1,30 @@
 import sys
+import argparse
 
-from src.random_color import RandomColor
-from src.image import ImageHandler
-from src.kmeans import Kmeans
+from random_color import RandomColor
+from image import ImageHandler
+from kmeans import Kmeans
 
-NUMBER_CENTERS = 15
+DEFAULT_NUMBER_CENTERS = 10
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("ERROR: Please indicate the image you wish to process.")
-        sys.exit(1)
+    parser = argparse.ArgumentParser(
+        description='Recolor an image.',
+        add_help=True
+    )
+    parser.add_argument('imagepath', help='the image path')
+    parser.add_argument('k', type=int, default=DEFAULT_NUMBER_CENTERS, nargs='?',
+                        help='the number of colors in the final image')
 
-    image_file = sys.argv[1]
+    args = parser.parse_args()
 
-    r = RandomColor(NUMBER_CENTERS)
+    image_file = args.imagepath
+
+    r = RandomColor(args.k)
     new_colors = r.list_of_colors()
 
     ih = ImageHandler(image_file)
-    kmeans = Kmeans(NUMBER_CENTERS, ih.pixels_list())
+    kmeans = Kmeans(args.k, ih.pixels_list())
     affected_items = kmeans.process()
 
     ih.replace_with_new_colors(affected_items, new_colors)

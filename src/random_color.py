@@ -12,7 +12,9 @@ class RandomColor:
         """Call Github's Hexbot to return a list of self.number_of_colors Color values
         :return: the "colors" list returned by the Hexbot
         """
-        parameters = {'count': self.number_of_colors}
+        parameters = {
+            'count': self.number_of_colors
+        }
         r = requests.get(url=HEXBOT_URL, params=parameters)
         return r.json()['colors']
 
