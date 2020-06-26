@@ -9,5 +9,5 @@ Inspired by Githubs Noops Challenge, this Python project uses
 To use it, please install the requirements listed in `requirements.txt`, then run the code 
 using the following command:
 ```bash
-python src/kmeans_image_coloring.py path_to_image
+python src/kmeans_image_coloring.py path_to_image [k]
 ```

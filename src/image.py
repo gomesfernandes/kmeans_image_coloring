@@ -1,5 +1,6 @@
 """Open, show and handle a Pillow Image. Note that it transforms images to grayscale."""
 from PIL import Image, ImageOps
+import numpy as np
 
 
 class ImageHandler:
@@ -10,24 +11,30 @@ class ImageHandler:
         self.result_image = None
 
     def pixels_list(self):
-        """Return the images list of pixels"""
-        return list(self.image.getdata())
+        """Return a numpy array of grayscale pixels"""
+        return np.array(self.image.getdata())
 
     def show_result(self):
         """Show the new image"""
         if not self.result_image is None:
             self.result_image.show()
 
-    def replace_with_new_colors(self, affected_items, new_colors):
-        """Create a new image according to the colors affected by Kmeans.
+    def repaint_with_new_colors(self, color_indexes, new_colors):
+        """Repaint the image with new colors, according to the positions in color_indexes.
 
-        :param affected_items: a list of (initial pixel value, color index) tuples
-        :param new_colors: a list of new colors, one for each color index
+        Each value in color_indexes represents an index in the new_colors list, which contains k RGB colors.
+        The new image has the same dimensions as the original one, and each pixel's color is defined
+        by color_index.
+
+        :param color_indexes: a numpy array of color indexes
+        :param new_colors: a list of RGB colors
         """
-        new_pixel_values = []
-        for tuple in affected_items:
-            color_index = tuple[1]
-            new_pixel_values.append(new_colors[color_index])
+        new_pixel_values = np.zeros((color_indexes.shape[0], 3), dtype=int)
+
+        for i in range(len(new_colors)):
+            new_pixel_values[color_indexes == i] = new_colors[i]
+
+        new_pixel_values = [tuple(x) for x in new_pixel_values.tolist()]
 
         self.result_image = Image.new("RGB", self.image.size)
         self.result_image.putdata(new_pixel_values)

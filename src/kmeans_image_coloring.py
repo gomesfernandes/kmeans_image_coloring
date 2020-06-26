@@ -19,13 +19,12 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     image_file = args.imagepath
-
-    r = RandomColor(args.k)
-    new_colors = r.list_of_colors()
-
     ih = ImageHandler(image_file)
-    kmeans = Kmeans(args.k, ih.pixels_list())
-    affected_items = kmeans.process()
 
-    ih.replace_with_new_colors(affected_items, new_colors)
+    kmeans = Kmeans(args.k, ih.pixels_list())
+    assigned_color_indexes = kmeans.process()
+
+    new_colors = RandomColor(args.k).list_of_colors()
+
+    ih.repaint_with_new_colors(assigned_color_indexes, new_colors)
     ih.show_result()
