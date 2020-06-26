@@ -17,30 +17,51 @@ class Kmeans:
         """
         self.number_of_clusters = k
         self.data = data
-        self.initial_centers = self._randomize_centers()
-
-    def _randomize_centers(self):
-        """Reset the initial centers to k random values from the dataset and return them"""
-        self.initial_centers = random.sample(self.data, self.number_of_clusters)
-        return self.initial_centers
 
     def process(self):
-        """Apply the KMeans algorithm to our data
+        """Apply the KMeans algorithm to our data.
 
-        :return: affected_items, a list of (data value, index of center) tuples
+        The initial K centers are randomly chosen from the dataset. All values in the dataset are assigned
+        to the closest center. For each of the k centers, a new center is calculated depending on the
+        values that were assigned to it. These steps of assigning items and recalculating the center
+        are repeated for a fixed number of iterations.
+
+        :return: a list of (data value, index of center) tuples
         """
-        centers = self.initial_centers
-        affected_items = []
+        centers = self._randomize_centers()
+        assert len(centers) == self.number_of_clusters
+        assigned_items = []
 
-        for iter in range(MAX_ITERATIONS):
-            affected_items = self._affect_items_to_closest_center(centers)
-            centers = self._recalculate_centers(affected_items)
+        for _ in range(MAX_ITERATIONS):
+            assigned_items = self._assign_items_to_closest_center(centers)
+            centers = self._recalculate_centers(assigned_items)
 
-        return affected_items
+        return assigned_items
+
+    def _randomize_centers(self):
+        """Return a list of k random values from the dataset"""
+        return random.sample(self.data, self.number_of_clusters)
+
+    def _assign_items_to_closest_center(self, centers):
+        """For each item in self.data, find the center that's closest.
+        Proximity is defined as the absolute difference between two integer values.
+
+        :param centers: a list of k values
+        :return: a list of (data value, index of closest center) tuples
+        """
+        assigned_items = []
+        for item in self.data:
+            index_closest_center = self._find_index_of_closest_center(item, centers)
+            assigned_items.append((item, index_closest_center))
+        return assigned_items
 
     def _find_index_of_closest_center(self, value, centers):
-        """Given a value and a list of center values, find the center
-        with the lowest absolute difference in values"""
+        """Given a value and a list of center values, find the index of the center
+        with the lowest absolute difference in values.
+
+        :param value: an integer
+        :return: the index of the closest center
+        """
         min_index = 0
         min_value = abs(centers[0] - value)
         for c in range(self.number_of_clusters):
@@ -50,29 +71,16 @@ class Kmeans:
                 min_value = diff
         return min_index
 
-    def _affect_items_to_closest_center(self, centers):
-        """For each item in self.data, find the center that's closest.
-        Proximity is defined as the absolute difference between two integer values.
+    def _recalculate_centers(self, assigned_items):
+        """Compute the new centers by calculating the mean of the points that were
+        assigned to them.
 
-        :param centers: the current values for the k centers
-        :return: a list of (data value, index of center) tuples
+        :param assigned_items: a list of (data value, index of center) tuples
+        :return: a list of k new centers
         """
-        affected_items = []
-        for item in self.data:
-            index_closest_center = self._find_index_of_closest_center(item, centers)
-            affected_items.append((item, index_closest_center))
-        return affected_items
-
-    def _recalculate_centers(self, affected_items):
-        """Calculate the new average for each center given the points that were
-        affected to them.
-
-        :param affected_items: a list of (data value, index of center) tuples
-        :return: a list of k new center values
-        """
-        new_centers = self.initial_centers
-        sorted_list = sorted(affected_items, key=lambda x: x[1])
-        c = groupby(sorted_list, key=operator.itemgetter(1))
+        new_centers = []
+        items_sorted_by_center = sorted(assigned_items, key=lambda x: x[1])
+        c = groupby(items_sorted_by_center, key=operator.itemgetter(1))
         for k, v in c:
             values = [x[0] for x in list(v)]
             new_centers[k] = sum(values)/len(values)
