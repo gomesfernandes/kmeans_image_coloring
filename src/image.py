@@ -1,3 +1,4 @@
+"""Open, show and handle a Pillow Image. Note that it transforms images to grayscale."""
 from PIL import Image, ImageOps
 
 
@@ -9,7 +10,7 @@ class ImageHandler:
         self.result_image = None
 
     def pixels_list(self):
-        """Return the images list of pixels (RGB values)"""
+        """Return the images list of pixels"""
         return list(self.image.getdata())
 
     def show_result(self):

@@ -1,3 +1,4 @@
+"""Perform Kmeans"""
 import random
 import operator
 from itertools import groupby
@@ -12,17 +13,32 @@ class Kmeans:
         values from the given data.
 
         :param k: the number of clusters
-        :param data: the data to partition
+        :param data: a list of values to partition
         """
         self.number_of_clusters = k
         self.data = data
-        self.initial_centers = random.sample(data, k)
+        self.initial_centers = self._randomize_centers()
 
-    def randomize_centers(self):
-        """Reset the initial centers to k random values from the dataset"""
+    def _randomize_centers(self):
+        """Reset the initial centers to k random values from the dataset and return them"""
         self.initial_centers = random.sample(self.data, self.number_of_clusters)
+        return self.initial_centers
 
-    def find_index_of_closest_center(self, value, centers):
+    def process(self):
+        """Apply the KMeans algorithm to our data
+
+        :return: affected_items, a list of (data value, index of center) tuples
+        """
+        centers = self.initial_centers
+        affected_items = []
+
+        for iter in range(MAX_ITERATIONS):
+            affected_items = self._affect_items_to_closest_center(centers)
+            centers = self._recalculate_centers(affected_items)
+
+        return affected_items
+
+    def _find_index_of_closest_center(self, value, centers):
         """Given a value and a list of center values, find the center
         with the lowest absolute difference in values"""
         min_index = 0
@@ -34,7 +50,7 @@ class Kmeans:
                 min_value = diff
         return min_index
 
-    def affect_items_to_closest_center(self, centers):
+    def _affect_items_to_closest_center(self, centers):
         """For each item in self.data, find the center that's closest.
         Proximity is defined as the absolute difference between two integer values.
 
@@ -43,11 +59,11 @@ class Kmeans:
         """
         affected_items = []
         for item in self.data:
-            index_closest_center = self.find_index_of_closest_center(item, centers)
+            index_closest_center = self._find_index_of_closest_center(item, centers)
             affected_items.append((item, index_closest_center))
         return affected_items
 
-    def recalculate_centers(self, affected_items):
+    def _recalculate_centers(self, affected_items):
         """Calculate the new average for each center given the points that were
         affected to them.
 
@@ -62,16 +78,3 @@ class Kmeans:
             new_centers[k] = sum(values)/len(values)
         return new_centers
 
-    def process(self):
-        """Apply the KMeans algorithm to our data
-
-        :return: affected_items, a list of (data value, index of center) tuples
-        """
-        centers = self.initial_centers
-        affected_items = []
-
-        for iter in range(MAX_ITERATIONS):
-            affected_items = self.affect_items_to_closest_center(centers)
-            centers = self.recalculate_centers(affected_items)
-
-        return affected_items
